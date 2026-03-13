@@ -2,6 +2,7 @@ import { applyAction, statusMessage, summarize, tickPet } from './engine.js';
 import { ensureState, resetState, saveState } from './state.js';
 import { PetAction } from './types.js';
 import { actionButtons, renderTelegramMessage } from './render.js';
+import { buildStatusPayload, handleCallback, renderForCli, runTickAndMaybeBuildPayload } from './telegram.js';
 
 const [, , command, arg] = process.argv;
 const state = ensureState();
@@ -12,6 +13,26 @@ if (command === 'status') {
   console.log(renderTelegramMessage(state));
   console.log('\nButtons:');
   console.log(JSON.stringify(actionButtons(), null, 2));
+  process.exit(0);
+}
+
+if (command === 'telegram-status') {
+  console.log(renderForCli(buildStatusPayload()));
+  process.exit(0);
+}
+
+if (command === 'telegram-callback') {
+  if (!arg) {
+    console.error('Usage: tsx src/cli.ts telegram-callback <pet:feed|pet:wash|pet:walk>');
+    process.exit(1);
+  }
+  console.log(renderForCli(handleCallback(arg)));
+  process.exit(0);
+}
+
+if (command === 'telegram-tick') {
+  const payload = runTickAndMaybeBuildPayload();
+  console.log(payload ? renderForCli(payload) : 'NO_MESSAGE');
   process.exit(0);
 }
 
@@ -43,5 +64,5 @@ if (command === 'reset') {
   process.exit(0);
 }
 
-console.log('Commands: status | tick | action <feed|wash|walk> | reset');
+console.log('Commands: status | telegram-status | telegram-callback <pet:x> | telegram-tick | tick | action <feed|wash|walk> | reset');
 process.exit(1);

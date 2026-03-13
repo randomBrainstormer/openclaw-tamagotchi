@@ -30,7 +30,7 @@ That keeps the toy understandable and makes the OpenClaw side actually demoable.
 ---
 
 ## Current status
-**Working local prototype.**
+**Working local prototype with Telegram-ready payloads and callback simulation.**
 
 Implemented now:
 - persistent local pet state
@@ -40,11 +40,16 @@ Implemented now:
 - mood changes
 - Telegram-friendly message rendering
 - inline button payload generation (`pet:feed`, `pet:wash`, `pet:walk`)
+- callback simulation through the CLI
 
-Not wired yet:
-- real Telegram callback handling
-- scheduled nudges from OpenClaw
-- production chat flow
+Partially wired:
+- early real Telegram demo screenshot
+- manual/assisted Telegram testing
+
+Not fully wired yet:
+- real OpenClaw callback handling end-to-end
+- scheduled nudges from OpenClaw in production
+- one-command “clone and deploy” setup
 
 ---
 
@@ -68,9 +73,63 @@ That would make the mechanics worse, not better.
 
 ---
 
+## How the Telegram interface works
+The Telegram-facing loop is intentionally simple:
+
+1. render the pet into a Telegram-safe message
+2. attach inline buttons
+3. map button callbacks to pet actions
+4. update local state
+5. re-render the new pet status with an in-character reaction
+
+Current callback payloads:
+- `pet:feed`
+- `pet:wash`
+- `pet:walk`
+
+Current Telegram-ready commands:
+
+```bash
+npm run telegram-status
+npm run telegram-callback -- pet:feed
+npm run telegram-callback -- pet:wash
+npm run telegram-callback -- pet:walk
+npm run telegram-tick
+```
+
+### What those commands do
+- `telegram-status` → emits a Telegram-ready JSON payload with message + buttons
+- `telegram-callback` → simulates a real inline-button click and returns the updated Telegram payload
+- `telegram-tick` → emits a Telegram payload only when a meaningful threshold is crossed
+
+This means the interface logic is already consumable by a wrapper, script, or agent.
+
+---
+
+## Why this is not a full autonomous agent
+That was a deliberate decision.
+
+A Tamagotchi-like toy needs:
+- predictable mechanics
+- meaningful buttons
+- visible state changes
+- consistent consequences
+
+A fully freeform agent too early would make the toy worse:
+- actions could feel mushy
+- state changes could become inconsistent
+- the “pet” might improvise instead of behaving like a creature
+
+So the better design is:
+- deterministic mechanics first
+- personality second
+- deeper agent behavior only if it improves the toy later
+
+---
+
 ## Quick start
 ```bash
-cd /root/atlas/experiments/projects/openclaw-tamagotchi
+cd /root/openclaw-tamagotchi
 npm install
 npm run reset
 npm run status
@@ -80,14 +139,17 @@ npm run demo-neglect
 Useful commands:
 
 ```bash
-npm run status        # current pet state + Telegram rendering
-npm run tick          # apply one decay tick
-npm run feed          # feed the pet
-npm run wash          # wash the pet
-npm run walk          # walk the pet
-npm run demo-neglect  # show the pet getting worse over time
-npm run dev           # small local demo flow
-npm run build         # TypeScript build check
+npm run status                 # current pet state + Telegram rendering
+npm run telegram-status        # JSON payload ready for Telegram send
+npm run telegram-callback -- pet:feed   # simulate button callback handling
+npm run telegram-tick          # JSON payload only when a threshold is crossed
+npm run tick                   # apply one decay tick
+npm run feed                   # feed the pet
+npm run wash                   # wash the pet
+npm run walk                   # walk the pet
+npm run demo-neglect           # show the pet getting worse over time
+npm run dev                    # small local demo flow
+npm run build                  # TypeScript build check
 ```
 
 ---
@@ -100,10 +162,7 @@ The target Telegram flow is:
 4. state updates immediately
 5. pet responds in-character
 
-Current button payloads:
-- `pet:feed`
-- `pet:wash`
-- `pet:walk`
+This is already validated in local simulation and early manual Telegram tests.
 
 ---
 
@@ -135,19 +194,47 @@ If the pet becomes annoying enough to feel real, the demo works.
 
 ---
 
+## Demo screenshot
+
+![Telegram demo](assets/demo-telegram.jpg)
+
+A real Telegram test with inline action buttons and a live pet response.
+
+---
+
+## Can another agent consume this?
+**Yes, partially — already.**
+
+An agent, script, or wrapper can already use the project through its CLI and Telegram JSON outputs.
+For example, a higher-level agent could:
+- clone the repo
+- run `npm install`
+- call `npm run telegram-status`
+- call `npm run telegram-callback -- pet:feed`
+- call `npm run telegram-tick`
+- use the returned JSON payloads for delivery
+
+So the project is already moving toward “tell your agent to clone and apply,” but it is not yet a full turnkey installer.
+
+That said, for demo purposes, it is already good enough.
+
+---
+
 ## Project files
 - `V1-SPEC.md` — current product/behavior spec
 - `INTEGRATION-PLAN.md` — next step for OpenClaw wiring
 - `GITHUB-SHARE.md` — short shareable description
-- `src/` — pet engine, state, rendering, CLI
+- `TODO.md` — implementation checklist
+- `src/` — pet engine, state, rendering, CLI, Telegram payload helpers
+- `assets/demo-telegram.jpg` — early Telegram demo screenshot
 
 ---
 
 ## Next step
 Wire the local engine into actual OpenClaw Telegram handling so the pet can:
-- send real messages
-- receive button clicks
-- update state from callbacks
-- complain on a schedule
+- send real messages automatically
+- receive real button clicks
+- update state from callbacks end-to-end
+- complain on a schedule without manual prompting
 
-That is when it stops being a terminal toy and becomes a real Telegram gremlin.
+That is when it stops being a prototype with a Telegram surface and becomes a real Telegram gremlin.

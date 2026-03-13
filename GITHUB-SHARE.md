@@ -26,6 +26,7 @@ That made it a much better OpenClaw demo.
 - mood + neglect behavior
 - Telegram-ready text rendering
 - button payloads like `pet:feed`
+- early Telegram screenshot/demo flow
 
 ## Good one-liner
 > A weird little Telegram gremlin built on OpenClaw.
