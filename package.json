@@ -1,0 +1,22 @@
+{
+  "name": "openclaw-tamagotchi",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/demo.ts",
+    "demo-neglect": "tsx src/demo-neglect.ts",
+    "status": "tsx src/cli.ts status",
+    "tick": "tsx src/cli.ts tick",
+    "feed": "tsx src/cli.ts action feed",
+    "wash": "tsx src/cli.ts action wash",
+    "walk": "tsx src/cli.ts action walk",
+    "reset": "tsx src/cli.ts reset",
+    "build": "tsc"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.5"
+  }
+}
